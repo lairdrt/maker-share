@@ -111,18 +111,51 @@ Start a conversation in ChatGPT or Claude to decide **what should be built** bef
 
 **Measure real fitted objects whenever possible.** A nominal product size or a photo without scale is a poor substitute for the dimension that controls fit. Mark unknowns explicitly so the agent can ask about them.
 
+The device-holder measurements, paths, and test results in the examples below are illustrative; replace them with your project's actual details. Replace `<username>` with your Windows username.
+
 Agree on a testable outcome: for example, “the holder accepts the measured device and lets it slide out without removing the mounting screws.” If fit is uncertain, ask about a small fit sample before the full part. Once the constraints are settled, ask the design agent for the first coding-agent prompt.
 
 <details>
 <summary>Example prompt</summary>
 
 ```text
-Help me design a removable holder for the device in these photos.
-Measurements: [width, height, depth in mm]. Mounting: [hardware/location].
-Use: [loads, heat, access needs]. Print: P1S, 0.4 mm nozzle, PLA.
-Identify missing measurements and whether a small fit sample would help.
-Once agreed, create a focused Codex/Claude Code prompt with dimensions,
-fixed features, verification, and export requirements. No commit or push.
+Help me design a removable wall-mounted holder for the device in these photos.
+
+Approximate measurements:
+- width: 42 mm
+- height: 85 mm
+- depth: 24 mm
+
+Mounting:
+- two #6 screws
+- mounted vertically on a wall
+- screw heads should not interfere with the device
+
+Use:
+- light load, under 0.5 kg
+- indoor or sheltered outdoor use
+- may see temperatures up to about 45 C / 113 F
+- device should slide in from the top
+- front display should remain visible
+- device should be easy to remove without removing the wall screws
+
+Print setup:
+- Bambu Lab P1S
+- 0.4 mm nozzle
+- PLA
+- supports should be avoided if practical
+
+Please identify any missing measurements or design decisions before modeling, and tell me whether a small fit-test piece would be useful.
+
+Once we agree on the design, create a focused Codex/Claude Code prompt that includes:
+- the agreed dimensions
+- required clearances
+- mounting details
+- features that must remain unchanged
+- verification steps
+- STL/export requirements
+
+Do not ask the coding agent to commit or push yet.
 ```
 
 </details>
@@ -145,8 +178,24 @@ fixed features, verification, and export requirements. No commit or push.
 <summary>Example prompt</summary>
 
 ```text
-Clone [GitHub repository URL] into [local destination folder].
-Do not overwrite an existing folder. Report the root folder to open in VS Code.
+Set up the maker-share GitHub repository on this Windows PC.
+
+GitHub repository:
+git@github.com:lairdrt/maker-share.git
+
+Use this local folder:
+C:\Users\<username>\Documents\Projects\maker-share
+
+If the folder does not exist, clone the repository there.
+If it already exists, do not overwrite it; check that it is the correct maker-share repository.
+
+When finished, tell me:
+- the local repository path
+- the current branch
+- whether origin points to the maker-share GitHub repository
+- whether the working tree is clean
+
+Do not modify project files, commit anything, or push anything.
 ```
 
 </details>
@@ -170,12 +219,19 @@ Ask the design agent to include the goal, target file, dimensions, what must sta
 <summary>Example prompt</summary>
 
 ```text
-Read AGENT.md, then update projects/device-holder/src/model.scad.
-Goal: widen the internal pocket to 42.6 mm for a measured 42.0 mm device
-(0.3 mm clearance per side). Keep exterior width, base thickness,
-mounting holes, and all other dimensions unchanged. Report any conflict.
-Verify the pocket dimension and F6 render. Do not regenerate exports.
-Do not commit or push. Report files changed and checks performed.
+Read AGENT.md first.
+
+Please update projects/device-holder/src/model.scad.
+
+The device is 42.0 mm wide. I want 0.3 mm clearance on each side,
+so make the inside width 42.6 mm.
+
+Keep the outside width, base thickness, mounting holes, overall height,
+and all other dimensions unchanged. Tell me if these requirements conflict.
+
+Render the model with OpenSCAD and check the new inside width.
+Do not update the STL or other exports yet. Do not commit or push.
+Tell me what changed and what you were able to check.
 ```
 
 </details>
@@ -186,10 +242,15 @@ Review fixed features too: a plausible-looking model can still have an incorrect
 <summary>Example prompt</summary>
 
 ```text
-Here is the coding agent's report: [paste report].
-My observations: [notes/photos]. Review it against our design constraints.
-Decide whether to revise or proceed to printing, and create the next prompt
-if needed. Distinguish verified results from checks still outstanding.
+Here is the report from Codex/Claude Code:
+
+[paste the report here]
+
+I also looked at the model in OpenSCAD.
+Please review the result against the design we agreed on.
+Tell me which checks are still needed.
+If something needs to change, explain what and give me the next prompt
+to paste into the coding agent. If it looks ready to print, tell me the next steps.
 ```
 
 </details>
@@ -217,10 +278,20 @@ Use a clear export filename. Geometry-only 3MF exports can also carry a mesh, bu
 <summary>Example prompt</summary>
 
 ```text
-Render [project/src/model.scad] with OpenSCAD's final render and verify
-[affected dimensions/features]. If successful, export to [project/exports/model.stl]
-and check the exported geometry where practical. Preserve unrelated files.
-Report any unavailable checks. Do not commit or push.
+Please check the current OpenSCAD model in:
+projects/device-holder/src/model.scad
+
+Render it using the final OpenSCAD render.
+Please check:
+- the inside width is 42.6 mm
+- the two mounting holes are still in the same locations
+- the model is a valid printable solid
+
+If everything checks out, export the STL to:
+projects/device-holder/exports/model.stl
+
+Do not change other files or commit or push anything yet.
+Tell me what you checked, what you could not check, and whether the export succeeded.
 ```
 
 </details>
@@ -258,14 +329,9 @@ For simple PLA prototypes, use these initial settings:
 
 **These are starting points, not universal settings.** Adjust for the part's function and inspect Preview again, especially fitted surfaces and mounting features.
 
-<details>
-<summary>Print settings screenshot</summary>
-
 ![Bambu Studio options showing P1S selection, nozzle diameter, filament profile, and layer height](docs/images/BambuStudioOpts.png)
 
-*Reference: where to find printer, nozzle, filament, and process settings. Select a process compatible with your P1S; the pictured process name mentions X1C.*
-
-</details>
+*Bambu Studio starting-point settings for the P1S. Confirm printer, installed nozzle, filament profile, and process settings before slicing; the pictured preset name includes “X1C”.*
 
 ### Save a repeatable print project
 
@@ -288,10 +354,15 @@ Tell the design agent the material, relevant print settings, result, and useful 
 <summary>Example prompt</summary>
 
 ```text
-The prototype was printed on a P1S with [material/nozzle/settings].
-Measured issue: [fit, clearance, warping, or other problem]. Photos attached.
-Help identify the needed revision and create a focused coding-agent prompt.
-Preserve [working features]; ask for missing measurements before changing fit.
+I printed the example holder on a Bambu Lab P1S using PLA,
+a 0.4 mm nozzle, and 0.20 mm layers.
+
+The sensor slides in, but the pocket is 0.4 mm too narrow for easy removal.
+The mounting holes and base work well. Photos attached.
+
+Help me decide what to change and give me the next coding-agent prompt.
+Keep the working mounting holes and base unchanged.
+Ask for any missing measurements before deciding the new inside width.
 ```
 
 </details>
@@ -306,46 +377,39 @@ For first-time setup, normally paste the setup prompt below; you do not need to 
 <summary>Copy/paste: set up maker-share on this Windows PC</summary>
 
 ```text
-I want to set up the maker-share GitHub repository on this Windows computer.
+Please set up the maker-share GitHub repository on this Windows PC.
 
-Please handle the Git/GitHub setup for me.
-
-Remote GitHub repository:
+GitHub repository:
 git@github.com:lairdrt/maker-share.git
 
-Preferred local parent folder:
-C:\Users\<username>\Documents\Projects
+Please put the local copy here:
+C:\Users\<username>\Documents\Projects\maker-share
 
-Please:
+Please handle the Git setup for me.
+Before making changes:
+- check that Git is installed; if not, stop and ask me to install Git for Windows
+- check whether the maker-share folder already exists
+- do not overwrite anything that is already there
 
-1. Check whether Git is installed and available.
-2. If Git is not available, stop and tell me to install Git for Windows.
-3. Check whether a maker-share folder already exists under the parent folder.
-4. If it does not exist, clone the maker-share GitHub repository there.
-5. If it already exists:
-   - do not overwrite it
-   - inspect it
-   - confirm whether it is already the correct maker-share GitHub repository
-6. Confirm the repository root.
-7. Confirm the current branch.
-8. Confirm the origin remote points to the maker-share GitHub repository.
-9. Configure local main to track origin/main if needed.
-10. Pull the latest origin/main only if the working tree is clean and it is safe to do so.
-11. Check Git status.
-12. Do not modify project files.
-13. Do not commit or push anything during setup.
+If the folder does not exist, clone maker-share into that location.
+If it already exists, check that it is the correct maker-share repository.
 
-Report:
-- local repository path
-- current branch
-- origin URL
-- whether main tracks origin/main
-- whether local main matches origin/main
-- final Git status
+Then:
+- make sure the current branch is main; if it is different, stop and tell me
+- make sure origin points to the GitHub repository above
+- make sure main is connected to origin/main
+- pull the latest version only if the working folder is clean and it is safe
+- do not change project files, commit, or push anything
 
-Do not rewrite history.
-Do not delete or overwrite an existing local folder.
-Stop and report any conflict or unexpected Git state.
+At the end, tell me:
+- where the local repository is
+- which branch I am on and the origin URL
+- whether main is connected to origin/main
+- whether it is up to date with GitHub
+- whether the working folder is clean
+
+Do not rewrite history or delete or overwrite an existing folder.
+If you find a conflict or something unexpected, stop and tell me before changing anything.
 ```
 
 </details>
@@ -353,55 +417,46 @@ Stop and report any conflict or unexpected Git state.
 Once the GitHub repository is set up, routine GitHub work can normally be handled entirely by the coding agent. After a design has been verified, normally paste the save-to-GitHub prompt below.
 
 <details>
-<summary>Copy/paste: save the current maker-share workspace to GitHub</summary>
+<summary>Copy/paste: save the current maker-share work to GitHub</summary>
 
 ```text
-The current maker-share workspace has been reviewed and is ready to save to GitHub.
+The current maker-share work has been reviewed and is ready to save to GitHub.
+Please handle all of the Git/GitHub work for me from the main maker-share folder.
 
-Please handle the Git/GitHub work for me.
+Before committing:
+- read AGENT.md and follow its Git rules
+- check Git status
+- review all changed, new, and deleted files anywhere inside maker-share
+- make sure the files belong to maker-share
+- do not include temporary, editor, cache, or build files, passwords, tokens,
+  credentials, private computer settings, or unrelated files
+- make sure referenced README images and project files are present
+- if an OpenSCAD model changed and this is a printable version,
+  make sure its matching exports are current
+- show me a short summary of what will be committed
 
-Work from the repository root.
+Then:
+- stage all intended maker-share files, including new files and intended deletions
+- do not leave out new files that belong to maker-share
+- do not include files from outside the maker-share folder
+- create a short descriptive commit message
+- commit the changes and push the current branch to origin on GitHub
 
-1. Read AGENT.md and follow its Git rules.
-2. Inspect the entire repository root and all tracked/untracked contents beneath it.
-3. Check Git status before changing anything.
-4. Treat the current contents of the maker-share repository root as the intended workspace to publish, except:
-   - do not include temporary/editor/cache/build junk
-   - do not include files clearly unrelated to maker-share
-   - do not include secrets, credentials, tokens, or machine-specific private data
-5. Review all changed, new, and deleted files.
-6. Confirm that README references, images, project files, source files, exports, documentation, and other intended repository content are present and consistent.
-7. If OpenSCAD source changed and this is a printable/release-ready design, verify matching exports are current where required.
-8. Stage all intended files under the repository root, including:
-   - modified files
-   - new files
-   - intended deletions
-9. Do not silently omit untracked files that are clearly part of the current repository.
-10. Do not include unrelated files outside the repository root.
-11. Show a concise summary of everything that will be committed before committing.
-12. Create a concise descriptive commit message based on the actual changes.
-13. Commit the complete intended repository state.
-14. Push the current branch to origin.
-15. Verify after the push that:
-    - the working tree is clean
-    - the local branch matches the remote branch
-    - all intended repository-root contents are represented in GitHub
-    - there are no remaining intended untracked files
+After the push, check:
+- the working tree is clean
+- the local branch matches its GitHub branch; for main, local main matches origin/main
+- all intended files are on GitHub
+- no intended maker-share files are left untracked
 
-Do not rewrite history.
-Do not move or replace existing version tags unless explicitly instructed.
-Do not delete remote content unless the corresponding local deletion is intentional.
+Do not rewrite history or move or replace existing version tags.
+Only delete something from GitHub if its local deletion was intentional.
 
-Return only:
-- files added
-- files modified
-- files deleted
-- commit message
-- commit hash
-- push result
-- final Git status
-- confirmation that local and remote branches match
-- confirmation that all intended repository-root contents are represented on GitHub
+At the end, tell me:
+- what files were added, changed, or deleted
+- the commit message and commit hash
+- whether the push succeeded
+- the final Git status and whether local and GitHub are in sync
+- whether all intended maker-share files are on GitHub
 ```
 
 </details>
@@ -418,21 +473,23 @@ The underlying workflow is **Pull → Work → Verify → Commit → Push**. The
 Use the instruction that matches the current step:
 
 ```text
-Check Git status for this local copy of the GitHub repository.
-Report whether it is clean and local main matches origin/main. Change nothing.
+Please check Git status for maker-share.
+Tell me whether the working folder is clean and local main is up to date
+with origin/main on GitHub. Do not change anything.
 ```
 
 ```text
-Check for local changes, then pull the latest origin/main before we start.
-If there are local changes or conflicts, report them before proceeding.
+Please check maker-share for local changes, then pull the latest origin/main.
+If there are local changes or conflicts, stop and tell me before continuing.
 Do not discard work or commit anything.
 ```
 
 ```text
-Review the diff and commit only [task files, including referenced assets]
-with a descriptive message. Push to origin/main. Verify the working tree
-status, that local main matches origin/main, and that all intended files
-are in the pushed commit. Do not create or move tags.
+Please review and commit only the README.md changes from this task.
+Use a short descriptive message and push to origin/main.
+Leave any other work unchanged. Check that the README changes reached GitHub,
+local main matches origin/main, and report any files still changed or untracked.
+Do not create or move tags.
 ```
 
 </details>
@@ -456,9 +513,13 @@ Important known-good designs may receive tags such as `v1.0`, `v2.0`, or `v3.0` 
 <summary>Example prompt</summary>
 
 ```text
-Tag verified commit [hash] as [project/version tag] and push that tag to origin.
-Confirm the tag does not already exist locally or remotely; if it does, stop
-and report. Do not move any tag. Verify the remote tag points to that commit.
+Please mark the verified maker-share commit I identify below as device-holder-v1.0
+and push that tag to origin.
+
+[paste the verified commit hash here]
+
+If that tag already exists locally or on GitHub, stop and tell me.
+Do not move any existing tag. Check that the GitHub tag points to this commit.
 ```
 
 </details>
@@ -493,10 +554,18 @@ Project documentation may capture useful measurements and results; ask the desig
 <summary>Example prompt</summary>
 
 ```text
-Create a coding-agent prompt to record these verified project results:
-[measurements, print setup, physical test results, and export status].
-Target [project documentation path]; preserve source and exports.
-Do not describe untested features as proven. No commit or push.
+Please create a coding-agent prompt to update:
+projects/device-holder/README.md
+
+Use these example test results:
+- printed on a Bambu Lab P1S with PLA and a 0.4 mm nozzle
+- 0.20 mm layers, 3 wall loops, 15% infill, no supports
+- inside width is 42.6 mm for a 42.0 mm device
+- the sensor slides in and out easily and the mounting holes line up
+- the STL matches this version; no Bambu Studio project has been saved yet
+
+Keep the model and exports unchanged. Describe only the checks actually done.
+Do not ask the coding agent to commit or push.
 ```
 
 </details>
