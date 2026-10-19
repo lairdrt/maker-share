@@ -12,7 +12,7 @@ You are the bridge between the two agents:
 
 1. Discuss your idea with ChatGPT or Claude. Supply measurements, photos, constraints, and desired behavior, then work through the design together.
 2. When ready, ask the design agent to create a prompt for Codex or Claude Code. You generally do not need to invent implementation prompts yourself.
-3. **Copy the entire prompt and paste it into the coding agent** running in the project repo. Let it make the requested changes, verify what it can, and return a concise report.
+3. **Copy the entire prompt and paste it into the coding agent** running in your local copy of the GitHub repository. Let it make the requested changes, verify what it can, and return a concise report.
 4. **Copy the coding agent's report and paste it back into the design-agent conversation.** Review the result together and decide the next step.
 5. Repeat with the next prompt as needed, then render, slice, print, and physically test. Bring measured print results back to the same design conversation.
 
@@ -87,8 +87,8 @@ Start with [Bambu Lab PLA Basic](https://us.store.bambulab.com/products/pla-basi
 | Git for Windows | Version control and sharing | [Install](https://git-scm.com/download/win) |
 | OpenSCAD | Preview, render, and export models | [Download](https://openscad.org/downloads.html) |
 | Bambu Studio | Orient, slice, preview, and print | [Download](https://bambulab.com/en/download/studio) |
-| Claude Code | Implement focused repo tasks | [Setup documentation](https://docs.anthropic.com/en/docs/claude-code/getting-started) |
-| Codex | Implement focused repo tasks | [Official IDE documentation](https://developers.openai.com/codex/ide) |
+| Claude Code | Implement focused GitHub repository tasks | [Setup documentation](https://docs.anthropic.com/en/docs/claude-code/getting-started) |
+| Codex | Implement focused GitHub repository tasks | [Official IDE documentation](https://developers.openai.com/codex/ide) |
 
 Install Git, VS Code, OpenSCAD, and Bambu Studio using the links above. Section 5 walks through the extension, coding-agent, and repository setup.
 
@@ -113,19 +113,43 @@ Start a conversation in ChatGPT or Claude to decide **what should be built** bef
 
 Agree on a testable outcome: for example, “the holder accepts the measured device and lets it slide out without removing the mounting screws.” If fit is uncertain, ask about a small fit sample before the full part. Once the constraints are settled, ask the design agent for the first coding-agent prompt.
 
+<details>
+<summary>Example prompt</summary>
+
+```text
+Help me design a removable holder for the device in these photos.
+Measurements: [width, height, depth in mm]. Mounting: [hardware/location].
+Use: [loads, heat, access needs]. Print: P1S, 0.4 mm nozzle, PLA.
+Identify missing measurements and whether a small fit sample would help.
+Once agreed, create a focused Codex/Claude Code prompt with dimensions,
+fixed features, verification, and export requirements. No commit or push.
+```
+
+</details>
+
 ## 5. VS Code and coding-agent workflow
 
 ![Visual Studio Code with OpenSCAD source, project files, and the Claude Code panel](docs/images/VSCode.png)
 
-*Reference: VS Code with the cradle source open and a coding-agent panel alongside it.*
+*Reference: VS Code with the cradle source open and a coding-agent Git status report alongside it.*
 
 ### First time
 
 1. Install VS Code and Git for Windows using Section 3.
 2. Open VS Code, click the **Extensions** icon on the left sidebar (or press **Ctrl+Shift+X**), search for **OpenSCAD Language Support** by **Leathong**, and click **Install**. This is our known working OpenSCAD extension.
 3. Install/configure Codex and/or Claude Code using its linked setup instructions, including sign-in.
-4. Ask the coding agent to clone the maker-share repository into your chosen local project folder; provide the repository URL from GitHub. If you already have a local copy, use that copy.
-5. Choose **File → Open Folder** and open the **maker-share repository root**, not a broad parent directory. Run the coding agent from that root.
+4. Ask the coding agent to clone the maker-share GitHub repository into your chosen local project folder; provide its URL from GitHub. If you already have a local copy, use that copy.
+5. Choose **File → Open Folder** and open the root folder of your **local copy of the GitHub repository**, not a broad parent directory. Run the coding agent from that root.
+
+<details>
+<summary>Example prompt</summary>
+
+```text
+Clone [GitHub repository URL] into [local destination folder].
+Do not overwrite an existing folder. Report the root folder to open in VS Code.
+```
+
+</details>
 
 ### Each work session
 
@@ -140,7 +164,10 @@ Agree on a testable outcome: for example, “the holder accepts the measured dev
 
 [AGENT.md](AGENT.md) defines implementation rules. The collaborator carries prompts and reports between the agents; the coding agent does not automatically share its results with the design conversation. Resolve new design decisions with the design agent before expanding implementation scope.
 
-Ask the design agent to include the goal, target file, dimensions, what must stay unchanged, verification, export requirements, and Git authorization in each prompt. A short example of what it might produce:
+Ask the design agent to include the goal, target file, dimensions, what must stay unchanged, verification, export requirements, and Git authorization in each prompt.
+
+<details>
+<summary>Example prompt</summary>
 
 ```text
 Read AGENT.md, then update projects/device-holder/src/model.scad.
@@ -151,7 +178,21 @@ Verify the pocket dimension and F6 render. Do not regenerate exports.
 Do not commit or push. Report files changed and checks performed.
 ```
 
+</details>
+
 Review fixed features too: a plausible-looking model can still have an incorrect clearance or shifted mounting hole.
+
+<details>
+<summary>Example prompt</summary>
+
+```text
+Here is the coding agent's report: [paste report].
+My observations: [notes/photos]. Review it against our design constraints.
+Decide whether to revise or proceed to printing, and create the next prompt
+if needed. Distinguish verified results from checks still outstanding.
+```
+
+</details>
 
 ## 6. OpenSCAD to Bambu Studio to print
 
@@ -168,9 +209,21 @@ Review fixed features too: a plausible-looking model can still have an incorrect
 5. Visually inspect important geometry, especially fitted surfaces, holes, and features changed by the task. Compare dimensions with the agreed measurements.
 6. Once verified, use **File → Export → Export as STL** and save into the project's `exports/` folder. If able and instructed, the coding agent may generate and verify the export instead.
 
-Prefer named parameters, explain non-obvious values, and derive related dimensions where practical. Preserve known-good geometry during narrow changes; a successful render alone does not prove dimensions or fit.
+The coding agent should keep important dimensions easy to identify and avoid changing parts of the model that already work. A successful render can still have the wrong size or fit; compare important dimensions with the real object before printing.
 
 Use a clear export filename. Geometry-only 3MF exports can also carry a mesh, but they do not automatically contain a prepared Bambu Studio print setup.
+
+<details>
+<summary>Example prompt</summary>
+
+```text
+Render [project/src/model.scad] with OpenSCAD's final render and verify
+[affected dimensions/features]. If successful, export to [project/exports/model.stl]
+and check the exported geometry where practical. Preserve unrelated files.
+Report any unavailable checks. Do not commit or push.
+```
+
+</details>
 
 ### Prepare the print in Bambu Studio
 
@@ -205,6 +258,15 @@ For simple PLA prototypes, use these initial settings:
 
 **These are starting points, not universal settings.** Adjust for the part's function and inspect Preview again, especially fitted surfaces and mounting features.
 
+<details>
+<summary>Print settings screenshot</summary>
+
+![Bambu Studio options showing P1S selection, nozzle diameter, filament profile, and layer height](docs/images/BambuStudioOpts.png)
+
+*Reference: where to find printer, nozzle, filament, and process settings. Select a process compatible with your P1S; the pictured process name mentions X1C.*
+
+</details>
+
 ### Save a repeatable print project
 
 **SCAD** is editable design source; **STL** is geometry sent to the slicer; a **Bambu project 3MF** is a saved ready-to-print project with orientation and slicer setup. After a print is proven, save a project such as `model-p1s-print.3mf` alongside its matching export.
@@ -222,18 +284,158 @@ A model is not fully proven because it looks correct in CAD. Test the printed pa
 
 Tell the design agent the material, relevant print settings, result, and useful photos. Describe failures with measurements, such as “pocket is 0.4 mm too narrow,” so it can create the next coding-agent prompt. Distinguish “rendered,” “sliced,” and “physically tested” when sharing progress.
 
+<details>
+<summary>Example prompt</summary>
+
+```text
+The prototype was printed on a P1S with [material/nozzle/settings].
+Measured issue: [fit, clearance, warping, or other problem]. Photos attached.
+Help identify the needed revision and create a focused coding-agent prompt.
+Preserve [working features]; ask for missing measurements before changing fit.
+```
+
+</details>
+
 ## 7. Git and GitHub with the coding agent
 
 Git keeps local version history; GitHub holds the shared remote copy. A commit records a version locally, and a push shares it. Install [Git for Windows](https://git-scm.com/download/win), then normally **tell Codex or Claude Code to perform Git operations**. Routine command-line Git work is not required.
 
-Use **Pull → Work → Verify → Commit → Push**. The coding agent can check status, pull, inspect diffs, stage relevant files, commit, push, and verify the result. Give instructions such as:
+For first-time setup, normally paste the setup prompt below; you do not need to configure Git manually. Codex or Claude Code can clone maker-share, create or check the local folder, configure or check `origin`, verify that `main` tracks `origin/main`, pull safely, and report final status.
 
-| When | Tell the coding agent |
-| --- | --- |
-| Check the workspace | “Check Git status and tell me whether the repo is clean.” |
-| Before editing | “Pull the latest changes from origin/main before we start.” |
-| Share verified work | “Review the changes, commit only the files from this task with a descriptive message, and push to origin/main.” |
-| Confirm completion | “Show me the current Git status and whether local main matches origin/main.” |
+<details>
+<summary>Copy/paste: set up maker-share on this Windows PC</summary>
+
+```text
+I want to set up the maker-share GitHub repository on this Windows computer.
+
+Please handle the Git/GitHub setup for me.
+
+Remote GitHub repository:
+git@github.com:lairdrt/maker-share.git
+
+Preferred local parent folder:
+C:\Users\<username>\Documents\Projects
+
+Please:
+
+1. Check whether Git is installed and available.
+2. If Git is not available, stop and tell me to install Git for Windows.
+3. Check whether a maker-share folder already exists under the parent folder.
+4. If it does not exist, clone the maker-share GitHub repository there.
+5. If it already exists:
+   - do not overwrite it
+   - inspect it
+   - confirm whether it is already the correct maker-share GitHub repository
+6. Confirm the repository root.
+7. Confirm the current branch.
+8. Confirm the origin remote points to the maker-share GitHub repository.
+9. Configure local main to track origin/main if needed.
+10. Pull the latest origin/main only if the working tree is clean and it is safe to do so.
+11. Check Git status.
+12. Do not modify project files.
+13. Do not commit or push anything during setup.
+
+Report:
+- local repository path
+- current branch
+- origin URL
+- whether main tracks origin/main
+- whether local main matches origin/main
+- final Git status
+
+Do not rewrite history.
+Do not delete or overwrite an existing local folder.
+Stop and report any conflict or unexpected Git state.
+```
+
+</details>
+
+Once the GitHub repository is set up, routine GitHub work can normally be handled entirely by the coding agent. After a design has been verified, normally paste the save-to-GitHub prompt below.
+
+<details>
+<summary>Copy/paste: save the current maker-share workspace to GitHub</summary>
+
+```text
+The current maker-share workspace has been reviewed and is ready to save to GitHub.
+
+Please handle the Git/GitHub work for me.
+
+Work from the repository root.
+
+1. Read AGENT.md and follow its Git rules.
+2. Inspect the entire repository root and all tracked/untracked contents beneath it.
+3. Check Git status before changing anything.
+4. Treat the current contents of the maker-share repository root as the intended workspace to publish, except:
+   - do not include temporary/editor/cache/build junk
+   - do not include files clearly unrelated to maker-share
+   - do not include secrets, credentials, tokens, or machine-specific private data
+5. Review all changed, new, and deleted files.
+6. Confirm that README references, images, project files, source files, exports, documentation, and other intended repository content are present and consistent.
+7. If OpenSCAD source changed and this is a printable/release-ready design, verify matching exports are current where required.
+8. Stage all intended files under the repository root, including:
+   - modified files
+   - new files
+   - intended deletions
+9. Do not silently omit untracked files that are clearly part of the current repository.
+10. Do not include unrelated files outside the repository root.
+11. Show a concise summary of everything that will be committed before committing.
+12. Create a concise descriptive commit message based on the actual changes.
+13. Commit the complete intended repository state.
+14. Push the current branch to origin.
+15. Verify after the push that:
+    - the working tree is clean
+    - the local branch matches the remote branch
+    - all intended repository-root contents are represented in GitHub
+    - there are no remaining intended untracked files
+
+Do not rewrite history.
+Do not move or replace existing version tags unless explicitly instructed.
+Do not delete remote content unless the corresponding local deletion is intentional.
+
+Return only:
+- files added
+- files modified
+- files deleted
+- commit message
+- commit hash
+- push result
+- final Git status
+- confirmation that local and remote branches match
+- confirmation that all intended repository-root contents are represented on GitHub
+```
+
+</details>
+
+### Optional: what the coding agent is doing
+
+You normally do not need to run these commands or use these smaller prompts yourself.
+
+The underlying workflow is **Pull → Work → Verify → Commit → Push**. The coding agent checks status, pulls, inspects diffs, stages relevant files, commits, pushes, and verifies the result.
+
+<details>
+<summary>Example prompts</summary>
+
+Use the instruction that matches the current step:
+
+```text
+Check Git status for this local copy of the GitHub repository.
+Report whether it is clean and local main matches origin/main. Change nothing.
+```
+
+```text
+Check for local changes, then pull the latest origin/main before we start.
+If there are local changes or conflicts, report them before proceeding.
+Do not discard work or commit anything.
+```
+
+```text
+Review the diff and commit only [task files, including referenced assets]
+with a descriptive message. Push to origin/main. Verify the working tree
+status, that local main matches origin/main, and that all intended files
+are in the pushed commit. Do not create or move tags.
+```
+
+</details>
 
 Have the agent report existing changes or conflicts before pulling or editing, preserve unrelated work, and review the relevant diff before committing. It must wait for explicit instructions to commit or push; the design agent can include those instructions in a prompt once you decide the work is ready to share.
 
@@ -249,6 +451,17 @@ git push    # Share committed work
 ```
 
 Important known-good designs may receive tags such as `v1.0`, `v2.0`, or `v3.0` to mark meaningful baselines. Ask the coding agent to create/share a tag when appropriate and identify which project/version it represents. Do not casually move an existing tag because documentation or photos change later.
+
+<details>
+<summary>Example prompt</summary>
+
+```text
+Tag verified commit [hash] as [project/version tag] and push that tag to origin.
+Confirm the tag does not already exist locally or remotely; if it does, stop
+and report. Do not move any tag. Verify the remote tag points to that commit.
+```
+
+</details>
 
 ## 8. Project structure and collaboration rules
 
@@ -275,6 +488,18 @@ maker-share/
 `.scad` is editable source; `.stl` is exported geometry; `*-p1s-print.3mf` denotes a known-good Bambu print project. Keep project-specific measurements and references with the project. Use root `docs/` and `reference/` for shared material.
 
 Project documentation may capture useful measurements and results; ask the design agent to include it in a prompt when useful. Routine README maintenance is not expected. Flag stale exports or unprinted designs in reports.
+
+<details>
+<summary>Example prompt</summary>
+
+```text
+Create a coding-agent prompt to record these verified project results:
+[measurements, print setup, physical test results, and export status].
+Target [project documentation path]; preserve source and exports.
+Do not describe untested features as proven. No commit or push.
+```
+
+</details>
 
 - Ask the coding agent to pull before starting and work on one focused task at a time.
 - Coordinate before modifying another collaborator's project.
